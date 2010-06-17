@@ -111,6 +111,10 @@ IMAGE_TRANSPOSE_CHOICES = (
 WATERMARK_STYLE_CHOICES = (
     ('tile', _('Tile')),
     ('scale', _('Scale')),
+    ('rbe', _('Right bottom edge')),
+    ('rte', _('Right top edge')),
+    ('lte', _('Left top edge')),
+    ('lbe', _('Left bottom edge')),
 )
 
 # Prepare a list of image filters
@@ -406,8 +410,8 @@ class ImageModel(models.Model):
         if im.size != photosize.size and photosize.size != (0, 0):
             im = self.resize_image(im, photosize)
         # Apply watermark if found
-        if photosize.watermark is not None:
-            im = photosize.watermark.post_process(im)
+        for watermark in photosize.watermarks.all():
+            im = watermark.post_process(im)
         # Apply effect if found
         if self.effect is not None:
             im = self.effect.post_process(im)
@@ -506,9 +510,10 @@ class Photo(ImageModel):
             self.title_slug = slugify(self.title)
         super(Photo, self).save(*args, **kwargs)
 
-    def get_absolute_url(self):
-        return reverse('pl-photo', args=[self.title_slug])
-
+# commented out becasue photologue.urls is not included to base urls.py and reverse() raise error
+#    def get_absolute_url(self):
+#        return reverse('pl-photo', args=[self.title_slug])
+#
     def public_galleries(self):
         """Return the public galleries to which this photo belongs."""
         return self.galleries.filter(is_public=True)
@@ -664,7 +669,7 @@ class PhotoSize(models.Model):
     pre_cache = models.BooleanField(_('pre-cache?'), default=False, help_text=_('If selected this photo size will be pre-cached as photos are added.'))
     increment_count = models.BooleanField(_('increment view count?'), default=False, help_text=_('If selected the image\'s "view_count" will be incremented when this photo size is displayed.'))
     effect = models.ForeignKey('PhotoEffect', null=True, blank=True, related_name='photo_sizes', verbose_name=_('photo effect'))
-    watermark = models.ForeignKey('Watermark', null=True, blank=True, related_name='photo_sizes', verbose_name=_('watermark image'))
+    watermarks = models.ManyToManyField('Watermark', null=True, blank=True, related_name='photo_sizes', verbose_name=_('watermark image'))
 
     class Meta:
         ordering = ['width', 'height']
