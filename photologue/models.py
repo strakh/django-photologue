@@ -111,6 +111,7 @@ IMAGE_TRANSPOSE_CHOICES = (
 WATERMARK_STYLE_CHOICES = (
     ('tile', _('Tile')),
     ('scale', _('Scale')),
+    ('rbe', _('Right bottom edge')),
 )
 
 # Prepare a list of image filters
@@ -131,7 +132,7 @@ class Gallery(models.Model):
     description = models.TextField(_('description'), blank=True)
     is_public = models.BooleanField(_('is public'), default=True,
                                     help_text=_('Public galleries will be displayed in the default views.'))
-    photos = models.ManyToManyField('Photo', related_name='galleries', verbose_name=_('photos'),
+    photos = models.ManyToManyField('Photo', related_name='photos', verbose_name=_('photos'),
                                     null=True, blank=True)
     tags = TagField(help_text=tagfield_help_text, verbose_name=_('tags'))
 
@@ -479,6 +480,10 @@ class ImageModel(models.Model):
         self.clear_cache()
         super(ImageModel, self).delete()
 
+class ManyToManyField_NoSyncdb(models.ManyToManyField):
+    def __init__(self, *args, **kwargs):
+      super(ManyToManyField_NoSyncdb, self).__init__(*args, **kwargs)
+      self.creates_table = False
 
 class Photo(ImageModel):
     title = models.CharField(_('title'), max_length=100, unique=True)
@@ -488,7 +493,8 @@ class Photo(ImageModel):
     date_added = models.DateTimeField(_('date added'), default=datetime.now, editable=False)
     is_public = models.BooleanField(_('is public'), default=True, help_text=_('Public photographs will be displayed in the default views.'))
     tags = TagField(help_text=tagfield_help_text, verbose_name=_('tags'))
-
+    galleries = ManyToManyField_NoSyncdb('Gallery', related_name='galleries', db_table=u'photologue_gallery_photos', verbose_name=_('galleries'), null=True, blank=True)
+    
     class Meta:
         ordering = ['-date_added']
         get_latest_by = 'date_added'
@@ -517,14 +523,14 @@ class Photo(ImageModel):
         try:
             return self.get_previous_by_date_added(galleries__exact=gallery,
                                                    is_public=True)
-        except Photo.DoesNotExist:
+        except self.DoesNotExist:
             return None
 
     def get_next_in_gallery(self, gallery):
         try:
             return self.get_next_by_date_added(galleries__exact=gallery,
                                                is_public=True)
-        except Photo.DoesNotExist:
+        except self.DoesNotExist:
             return None
 
 

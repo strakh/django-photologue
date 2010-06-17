@@ -48,6 +48,8 @@ def apply_watermark(im, mark, position, opacity=1):
         h = int(mark.size[1] * ratio)
         mark = mark.resize((w, h))
         layer.paste(mark, ((im.size[0] - w) / 2, (im.size[1] - h) / 2))
+    elif position == 'rbe':
+        layer.paste(mark, (im.size[0]-mark.size[0], im.size[1]-mark.size[1]))
     else:
         layer.paste(mark, position)
     # composite the watermark with the layer
