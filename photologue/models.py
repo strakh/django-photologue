@@ -72,6 +72,7 @@ PHOTOLOGUE_DIR = getattr(settings, 'PHOTOLOGUE_DIR', 'photologue')
 
 # Look for user function to define file paths
 PHOTOLOGUE_PATH = getattr(settings, 'PHOTOLOGUE_PATH', None)
+PHOTOLOGUE_PATH_DATEBASED = getattr(settings, 'PHOTOLOGUE_PATH_DATEBASED', True)
 if PHOTOLOGUE_PATH is not None:
     if callable(PHOTOLOGUE_PATH):
         get_storage_path = PHOTOLOGUE_PATH
@@ -81,8 +82,14 @@ if PHOTOLOGUE_PATH is not None:
         module = __import__(module_name)
         get_storage_path = getattr(module, parts[-1])
 else:
-    def get_storage_path(instance, filename):
-        return os.path.join(PHOTOLOGUE_DIR, 'photos', filename)
+    if PHOTOLOGUE_PATH_DATEBASED:
+        from datetime import datetime
+        def get_storage_path(instance, filename):
+            date = datetime.now()
+            return os.path.join(PHOTOLOGUE_DIR, 'photos', date.strftime('%Y'), date.strftime('%m'), date.strftime('%d'), filename)
+    else:
+        def get_storage_path(instance, filename):
+            return os.path.join(PHOTOLOGUE_DIR, 'photos', filename)
 
 # Quality options for JPEG images
 JPEG_QUALITY_CHOICES = (
