@@ -32,6 +32,10 @@ except ImportError:
     except ImportError:
         raise ImportError('Photologue was unable to import the Python Imaging Library. Please confirm it`s installed and available on your current Python path.')
 
+# South-related introspection code for custom field below (TagField)
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^photologue\.models\.TagField"])
+
 # attempt to load the django-tagging TagField from default location,
 # otherwise we substitude a dummy TagField.
 try:
