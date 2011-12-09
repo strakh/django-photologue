@@ -15,6 +15,7 @@ from django.template.defaultfilters import slugify
 from django.utils.encoding import smart_str, force_unicode
 from django.utils.functional import curry
 from django.utils.translation import ugettext_lazy as _
+from django.utils.encoding import smart_unicode
 
 # Required PIL classes may or may not be available from the root namespace
 # depending on the installation method used.
@@ -312,6 +313,7 @@ class ImageModel(models.Model):
     def _get_filename_for_size(self, size):
         size = getattr(size, 'name', size)
         base, ext = os.path.splitext(self.image_filename())
+        base = smart_unicode(base)
         return ''.join([base, '_', size, ext])
 
     def _get_SIZE_photosize(self, size):
