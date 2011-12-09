@@ -9,6 +9,7 @@ from inspect import isclass
 from django.db import models
 from django.db.models.signals import post_init
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
@@ -36,6 +37,7 @@ except ImportError:
 # South-related introspection code for custom field below (TagField)
 from south.modelsinspector import add_introspection_rules
 add_introspection_rules([], ["^photologue\.models\.TagField"])
+add_introspection_rules([], ["^photologue\.models\.ManyToManyField_NoSyncdb"])
 
 # attempt to load the django-tagging TagField from default location,
 # otherwise we substitude a dummy TagField.
@@ -507,6 +509,7 @@ class Photo(ImageModel):
     is_public = models.BooleanField(_('is public'), default=True, help_text=_('Public photographs will be displayed in the default views.'))
     tags = TagField(help_text=tagfield_help_text, verbose_name=_('tags'))
     galleries = ManyToManyField_NoSyncdb('Gallery', related_name='galleries', db_table=u'photologue_gallery_photos', verbose_name=_('galleries'), null=True, blank=True)
+    user = models.ForeignKey(User, related_name='photos')
     
     class Meta:
         ordering = ['-date_added']
@@ -545,7 +548,6 @@ class Photo(ImageModel):
                                                is_public=True)
         except self.DoesNotExist:
             return None
-
 
 class BaseEffect(models.Model):
     name = models.CharField(_('name'), max_length=30, unique=True)

@@ -12,7 +12,7 @@ class GalleryAdmin(admin.ModelAdmin):
     filter_horizontal = ('photos',)
 
 class PhotoAdmin(admin.ModelAdmin):
-    list_display = ('title', 'date_taken', 'date_added', 'is_public', 'tags', 'view_count', 'admin_thumbnail')
+    list_display = ('title', 'user', 'date_taken', 'date_added', 'is_public', 'tags', 'view_count', 'admin_thumbnail')
     list_filter = ['date_added', 'is_public']
     search_fields = ['title', 'title_slug', 'caption']
     list_per_page = 10
